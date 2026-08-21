@@ -49,20 +49,25 @@ jobs:
           name: windows-installer
           path: dist/*-setup.exe
 
-      - name: 诊断 - 创建 issue 记录失败日志
+      - name: 诊断 - 上传失败日志到 issue
         if: failure()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            let log = '(无日志)';
-            try { log = fs.readFileSync('build_win.log', 'utf8'); } catch (e) {}
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: '[CI] Windows 构建失败',
-              body: '```\n' + log.slice(0, 6000) + '\n```'
-            });
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          BODY=$(python -c "import sys,json
+          try:
+              t=open('build_win.log',encoding='utf-8',errors='replace').read()
+          except Exception as e:
+              t='no log: '+str(e)
+          print(json.dumps(t[:6000]))")
+          curl -sS -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            -d "{\"title\":\"[CI] Windows 构建失败\",\"body\":$BODY}" \
+            "https://api.github.com/repos/$GH_REPO/issues"
 
   build-macos:
     name: macOS 安装包 (DMG)
@@ -101,17 +106,22 @@ jobs:
           name: macos-installer
           path: dist/*.dmg
 
-      - name: 诊断 - 创建 issue 记录失败日志
+      - name: 诊断 - 上传失败日志到 issue
         if: failure()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            let log = '(无日志)';
-            try { log = fs.readFileSync('build_mac.log', 'utf8'); } catch (e) {}
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: '[CI] macOS 构建失败',
-              body: '```\n' + log.slice(0, 6000) + '\n```'
-            });
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          BODY=$(python -c "import sys,json
+          try:
+              t=open('build_mac.log',encoding='utf-8',errors='replace').read()
+          except Exception as e:
+              t='no log: '+str(e)
+          print(json.dumps(t[:6000]))")
+          curl -sS -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            -d "{\"title\":\"[CI] macOS 构建失败\",\"body\":$BODY}" \
+            "https://api.github.com/repos/$GH_REPO/issues"
