@@ -7,6 +7,10 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+# 允许工作流内的 GITHUB_TOKEN 推送诊断日志分支
+permissions:
+  contents: write
+
 # 禁止 electron-builder 在 macOS 上自动寻找代码签名证书（云端无证书，避免卡死）
 env:
   CSC_IDENTITY_AUTO_DISCOVERY: 'false'
@@ -49,25 +53,20 @@ jobs:
           name: windows-installer
           path: dist/*-setup.exe
 
-      - name: 诊断 - 上传失败日志到 issue
+      - name: 诊断 - 提交失败日志到 diag-logs 分支
         if: failure()
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          BODY=$(python -c "import sys,json
-          try:
-              t=open('build_win.log',encoding='utf-8',errors='replace').read()
-          except Exception as e:
-              t='no log: '+str(e)
-          print(json.dumps(t[:6000]))")
-          curl -sS -X POST \
-            -H "Authorization: token $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            -H "Content-Type: application/json" \
-            -d "{\"title\":\"[CI] Windows 构建失败\",\"body\":$BODY}" \
-            "https://api.github.com/repos/$GH_REPO/issues"
+          mkdir -p ci-logs
+          if [ -f build_win.log ]; then cp build_win.log ci-logs/build_win.log; else echo "无日志" > ci-logs/build_win.log; fi
+          git config user.email "ci@github.com"
+          git config user.name "CI Bot"
+          git add ci-logs/build_win.log
+          git commit -m "diag: windows build log" || echo "无变更可提交"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git" HEAD:diag-logs --force
 
   build-macos:
     name: macOS 安装包 (DMG)
@@ -106,22 +105,17 @@ jobs:
           name: macos-installer
           path: dist/*.dmg
 
-      - name: 诊断 - 上传失败日志到 issue
+      - name: 诊断 - 提交失败日志到 diag-logs 分支
         if: failure()
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          BODY=$(python -c "import sys,json
-          try:
-              t=open('build_mac.log',encoding='utf-8',errors='replace').read()
-          except Exception as e:
-              t='no log: '+str(e)
-          print(json.dumps(t[:6000]))")
-          curl -sS -X POST \
-            -H "Authorization: token $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            -H "Content-Type: application/json" \
-            -d "{\"title\":\"[CI] macOS 构建失败\",\"body\":$BODY}" \
-            "https://api.github.com/repos/$GH_REPO/issues"
+          mkdir -p ci-logs
+          if [ -f build_mac.log ]; then cp build_mac.log ci-logs/build_mac.log; else echo "无日志" > ci-logs/build_mac.log; fi
+          git config user.email "ci@github.com"
+          git config user.name "CI Bot"
+          git add ci-logs/build_mac.log
+          git commit -m "diag: macos build log" || echo "无变更可提交"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git" HEAD:diag-logs --force
