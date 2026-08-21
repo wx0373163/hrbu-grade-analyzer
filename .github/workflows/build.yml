@@ -7,6 +7,10 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+# 禁止 electron-builder 在 macOS 上自动寻找代码签名证书（云端无证书，避免卡死）
+env:
+  CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
 jobs:
   build-windows:
     name: Windows 安装包 (NSIS)
@@ -22,22 +26,43 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: 安装依赖
-        run: npm install --save-dev electron electron-builder png2icons
+      - name: 安装依赖（严格按 package-lock.json，确保与本机验证过的版本一致）
+        run: npm ci
 
       - name: 生成图标 (PNG -> ico/icns)
+        shell: bash
         run: |
           python build/make_icon.py
           node build/make_icons.js
 
       - name: 构建 Windows 安装包
-        run: npm run dist:win
+        id: build_win
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run dist:win 2>&1 | tee build_win.log
 
       - name: 上传 Windows 安装包
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: dist/*-setup.exe
+
+      - name: 诊断 - 创建 issue 记录失败日志
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let log = '(无日志)';
+            try { log = fs.readFileSync('build_win.log', 'utf8'); } catch (e) {}
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '[CI] Windows 构建失败',
+              body: '```\n' + log.slice(0, 6000) + '\n```'
+            });
 
   build-macos:
     name: macOS 安装包 (DMG)
@@ -53,19 +78,40 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: 安装依赖
-        run: npm install --save-dev electron electron-builder png2icons
+      - name: 安装依赖（严格按 package-lock.json）
+        run: npm ci
 
       - name: 生成图标 (PNG -> ico/icns)
+        shell: bash
         run: |
           python build/make_icon.py
           node build/make_icons.js
 
       - name: 构建 macOS 安装包 (Intel + Apple 芯片)
-        run: npm run dist:mac
+        id: build_mac
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run dist:mac 2>&1 | tee build_mac.log
 
       - name: 上传 macOS 安装包
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: macos-installer
           path: dist/*.dmg
+
+      - name: 诊断 - 创建 issue 记录失败日志
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let log = '(无日志)';
+            try { log = fs.readFileSync('build_mac.log', 'utf8'); } catch (e) {}
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '[CI] macOS 构建失败',
+              body: '```\n' + log.slice(0, 6000) + '\n```'
+            });
