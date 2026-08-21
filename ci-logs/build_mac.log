@@ -1,0 +1,36 @@
+
+> hrbu-grade-analyzer@2.0.1 dist:mac
+> electron-builder --mac --x64 --arm64
+
+  • electron-builder  version=26.15.3 os=25.5.0
+  • Implicit publishing triggered by CI detection. This behavior will be disabled in electron-builder v27. Please use --publish explicitly.
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=43.4.1 arch=x64 buildFromSource=false workspaceRoot=/Users/runner/work/hrbu-grade-analyzer/hrbu-grade-analyzer projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=x64 electron=43.4.1 appOutDir=dist/mac
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=/Users/runner/work/hrbu-grade-analyzer/hrbu-grade-analyzer/dist/mac
+  • searching for node modules  pm=npm searchDir=/Users/runner/work/hrbu-grade-analyzer/hrbu-grade-analyzer
+  • searching for node modules  pm=traversal searchDir=/Users/runner/work/hrbu-grade-analyzer/hrbu-grade-analyzer
+  • using manual traversal of node_modules to build dependency tree
+  • no node modules returned while searching directories  searchDirectories=[""]
+  • downloaded      label=icons-bundle.tar.gz progress=100%
+  • skipped macOS application code signing  reason=, see https://electron.build/code-signing CSC_IDENTITY_AUTO_DISCOVERY=false
+  • building        target=DMG arch=x64 file=dist/哈尔滨学院成绩分析工作平台 v2.01.dmg
+  • executing @electron/rebuild  electronVersion=43.4.1 arch=arm64 buildFromSource=false workspaceRoot=/Users/runner/work/hrbu-grade-analyzer/hrbu-grade-analyzer projectDir=./ appDir=./
+  • installing native dependencies  arch=arm64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=arm64 electron=43.4.1 appOutDir=dist/mac-arm64
+  • downloaded      label=dmgbuild-bundle-arm64-75c8a6c.tar.gz progress=100%
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=/Users/runner/work/hrbu-grade-analyzer/hrbu-grade-analyzer/dist/mac-arm64
+  • searching for node modules  pm=npm searchDir=/Users/runner/work/hrbu-grade-analyzer/hrbu-grade-analyzer
+  • searching for node modules  pm=traversal searchDir=/Users/runner/work/hrbu-grade-analyzer/hrbu-grade-analyzer
+  • using manual traversal of node_modules to build dependency tree
+  • no node modules returned while searching directories  searchDirectories=[""]
+  • skipped macOS application code signing  reason=, see https://electron.build/code-signing CSC_IDENTITY_AUTO_DISCOVERY=false
+  • building        target=DMG arch=arm64 file=dist/哈尔滨学院成绩分析工作平台 v2.01.dmg
+  • building block map  blockMapFile=dist/哈尔滨学院成绩分析工作平台 v2.01.dmg.blockmap
+  • building block map  blockMapFile=dist/哈尔滨学院成绩分析工作平台 v2.01.dmg.blockmap
+  ⨯ GitHub Personal Access Token is not set, neither programmatically, nor using env "GH_TOKEN"
