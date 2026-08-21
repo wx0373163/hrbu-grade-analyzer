@@ -1,0 +1,71 @@
+name: 构建桌面安装包
+
+# 触发：推送到 main 分支、打 v* 标签、或手动触发
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Windows 安装包 (NSIS)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 安装依赖
+        run: npm install --save-dev electron electron-builder png2icons
+
+      - name: 生成图标 (PNG -> ico/icns)
+        run: |
+          python build/make_icon.py
+          node build/make_icons.js
+
+      - name: 构建 Windows 安装包
+        run: npm run dist:win
+
+      - name: 上传 Windows 安装包
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/*-setup.exe
+
+  build-macos:
+    name: macOS 安装包 (DMG)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 安装依赖
+        run: npm install --save-dev electron electron-builder png2icons
+
+      - name: 生成图标 (PNG -> ico/icns)
+        run: |
+          python build/make_icon.py
+          node build/make_icons.js
+
+      - name: 构建 macOS 安装包 (Intel + Apple 芯片)
+        run: npm run dist:mac
+
+      - name: 上传 macOS 安装包
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: dist/*.dmg

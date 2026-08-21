@@ -1,0 +1,56 @@
+{
+  "name": "hrbu-grade-analyzer",
+  "version": "2.0.1",
+  "description": "哈尔滨学院成绩分析工作平台 桌面版 v2.01",
+  "main": "main.js",
+  "author": "wangx (wangxiao@hrbu.edu.cn)",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac": "electron-builder --mac --x64 --arm64"
+  },
+  "build": {
+    "appId": "com.hrbu.gradeanalyzer",
+    "productName": "哈尔滨学院成绩分析工作平台 v2.01",
+    "copyright": "Copyright © 2026 wangx (wangxiao@hrbu.edu.cn)",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "src/**/*",
+      "build/icon.png"
+    ],
+    "icon": "build/icon.png",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "${productName}-setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "哈尔滨学院成绩分析工作平台 v2.01"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.education",
+      "artifactName": "${productName}.${ext}"
+    },
+    "dmg": {
+      "title": "${productName}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
+    "png2icons": "^2.0.1"
+  }
+}
