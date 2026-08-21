@@ -53,6 +53,22 @@ export ELECTRON_BUILDER_BINARIES_MIRROR="https://registry.npmmirror.com/-/binary
 
 > 提示：macOS 上未做 Apple 开发者签名时，首次打开需在「系统设置 → 隐私与安全性」中允许该 App（或右键「打开」）。
 
+## 云端自动构建（GitHub Actions，无需本地 Mac）
+
+项目已包含 `.github/workflows/build.yml`：推送到 GitHub 后，云端会**同时**打出 Windows 安装包和 macOS 安装包，产物在每次 Actions 运行的 **Artifacts** 里下载。
+
+- Windows 产物：`windows-installer` → `哈尔滨学院成绩分析工作平台 v2.01-setup.exe`
+- macOS 产物：`macos-installer` → `哈尔滨学院成绩分析工作平台 v2.01.dmg`（含 Intel x64 与 Apple arm64 两个）
+
+CI 里用 `build/make_icon.py`（纯标准库）自动生成图标，仓库无需包含二进制图标文件。
+在 GitHub 网页新建仓库后，本地推送即可触发：
+
+```bash
+cd grade-app
+git remote add origin https://github.com/<你的用户名>/hrbu-grade-analyzer.git
+git push -u origin main
+```
+
 ## 从源码重新构建（Windows）
 
 ```bash
