@@ -1,0 +1,29 @@
+
+> hrbu-grade-analyzer@2.0.1 dist:win
+> electron-builder --win --x64
+
+  • electron-builder  version=26.15.3 os=10.0.26100
+  • Implicit publishing triggered by CI detection. This behavior will be disabled in electron-builder v27. Please use --publish explicitly.
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=43.4.1 arch=x64 buildFromSource=false workspaceRoot=D:\a\hrbu-grade-analyzer\hrbu-grade-analyzer projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=43.4.1 appOutDir=dist\win-unpacked
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=D:\a\hrbu-grade-analyzer\hrbu-grade-analyzer\dist\win-unpacked
+  • searching for node modules  pm=npm searchDir=D:\a\hrbu-grade-analyzer\hrbu-grade-analyzer
+  • searching for node modules  pm=traversal searchDir=D:\a\hrbu-grade-analyzer\hrbu-grade-analyzer
+  • using manual traversal of node_modules to build dependency tree
+  • no node modules returned while searching directories  searchDirectories=[""]
+  • updating asar integrity executable resource  executablePath=dist\win-unpacked\哈尔滨学院成绩分析工作平台 v2.01.exe
+  • downloaded      label=icons-bundle.tar.gz progress=100%
+  • signing with signtool.exe  path=dist\win-unpacked\哈尔滨学院成绩分析工作平台 v2.01.exe
+  • building        target=nsis file=dist\哈尔滨学院成绩分析工作平台 v2.01-setup.exe archs=x64 oneClick=false perMachine=false
+  • downloaded      label=nsis-3.0.4.1.7z progress=100%
+  • downloaded      label=7zip-win-x64.tar.gz progress=100%
+  • signing with signtool.exe  path=dist\win-unpacked\resources\elevate.exe
+  • downloaded      label=nsis-resources-3.4.1.7z progress=100%
+  • signing with signtool.exe  path=dist\哈尔滨学院成绩分析工作平台 v2.01-setup.__uninstaller.exe
+  • signing with signtool.exe  path=dist\哈尔滨学院成绩分析工作平台 v2.01-setup.exe
+  • building block map  blockMapFile=dist\哈尔滨学院成绩分析工作平台 v2.01-setup.exe.blockmap
+  ⨯ GitHub Personal Access Token is not set, neither programmatically, nor using env "GH_TOKEN"
