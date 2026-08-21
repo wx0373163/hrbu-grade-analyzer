@@ -1,13 +1,16 @@
 name: 构建桌面安装包
 
-# 触发：推送到 main 分支、打 v* 标签、或手动触发
+# 触发：
+#   - 推送到 main 分支：仅构建并上传 Artifacts（用于测试，不发布 Release）
+#   - 推送 v* 标签（如 v2.0.1）：构建双平台安装包并自动发布到 GitHub Release
+#   - 手动触发
 on:
   push:
     branches: [main]
     tags: ['v*']
   workflow_dispatch:
 
-# 允许工作流内的 GITHUB_TOKEN 写入诊断日志分支
+# 允许工作流内的 GITHUB_TOKEN 写入 Release / 诊断日志分支
 permissions:
   contents: write
 
@@ -153,3 +156,31 @@ jobs:
           req=urllib.request.Request(f"https://api.github.com/repos/{REPO}/contents/ci-logs/build_mac.log",data=json.dumps(body).encode(),headers=H,method='PUT')
           print(urllib.request.urlopen(req,timeout=30).read().decode()[:200])
           PY
+
+  release:
+    name: 发布到 GitHub Release
+    needs: [build-windows, build-macos]
+    # 仅在推送 v* 标签时发布 Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 下载双平台安装包
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: '*-installer'
+          merge-multiple: true
+
+      - name: 列出待发布文件
+        run: ls -lh artifacts/
+
+      - name: 创建 Release 并上传安装包
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          files: artifacts/*
+          generate_release_notes: true
+          prerelease: false
