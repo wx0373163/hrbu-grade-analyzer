@@ -7,7 +7,7 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
-# 允许工作流内的 GITHUB_TOKEN 推送诊断日志分支
+# 允许工作流内的 GITHUB_TOKEN 写入诊断日志分支
 permissions:
   contents: write
 
@@ -53,20 +53,38 @@ jobs:
           name: windows-installer
           path: dist/*-setup.exe
 
-      - name: 诊断 - 提交失败日志到 diag-logs 分支
+      - name: 诊断 - 上传失败日志 (contents API)
         if: failure()
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          mkdir -p ci-logs
-          if [ -f build_win.log ]; then cp build_win.log ci-logs/build_win.log; else echo "无日志" > ci-logs/build_win.log; fi
-          git config user.email "ci@github.com"
-          git config user.name "CI Bot"
-          git add ci-logs/build_win.log
-          git commit -m "diag: windows build log" || echo "无变更可提交"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git" HEAD:diag-logs --force
+          python - <<'PY'
+          import os,json,base64,urllib.request
+          TOK=os.environ['GH_TOKEN']; REPO=os.environ['GH_REPO']
+          H={"Authorization":f"token {TOK}","Accept":"application/vnd.github+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"}
+          p='build_win.log'
+          data=open(p,'rb').read() if os.path.exists(p) else b'(no log)'
+          content=base64.b64encode(data).decode()
+          # 创建 diag-logs 分支（已存在则忽略）
+          try:
+              req=urllib.request.Request(f"https://api.github.com/repos/{REPO}/git/refs",data=json.dumps({"ref":"refs/heads/diag-logs","sha":os.popen('git rev-parse HEAD').read().strip()}).encode(),headers=H,method='POST')
+              urllib.request.urlopen(req,timeout=30).read()
+          except Exception as e:
+              pass
+          # 获取现有 sha
+          sha=''
+          try:
+              req=urllib.request.Request(f"https://api.github.com/repos/{REPO}/contents/ci-logs/build_win.log?ref=diag-logs",headers=H)
+              sha=json.loads(urllib.request.urlopen(req,timeout=30).read()).get('sha','')
+          except Exception:
+              pass
+          body={"message":"diag windows","content":content,"branch":"diag-logs"}
+          if sha: body["sha"]=sha
+          req=urllib.request.Request(f"https://api.github.com/repos/{REPO}/contents/ci-logs/build_win.log",data=json.dumps(body).encode(),headers=H,method='PUT')
+          print(urllib.request.urlopen(req,timeout=30).read().decode()[:200])
+          PY
 
   build-macos:
     name: macOS 安装包 (DMG)
@@ -105,17 +123,33 @@ jobs:
           name: macos-installer
           path: dist/*.dmg
 
-      - name: 诊断 - 提交失败日志到 diag-logs 分支
+      - name: 诊断 - 上传失败日志 (contents API)
         if: failure()
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          mkdir -p ci-logs
-          if [ -f build_mac.log ]; then cp build_mac.log ci-logs/build_mac.log; else echo "无日志" > ci-logs/build_mac.log; fi
-          git config user.email "ci@github.com"
-          git config user.name "CI Bot"
-          git add ci-logs/build_mac.log
-          git commit -m "diag: macos build log" || echo "无变更可提交"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git" HEAD:diag-logs --force
+          python - <<'PY'
+          import os,json,base64,urllib.request
+          TOK=os.environ['GH_TOKEN']; REPO=os.environ['GH_REPO']
+          H={"Authorization":f"token {TOK}","Accept":"application/vnd.github+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"}
+          p='build_mac.log'
+          data=open(p,'rb').read() if os.path.exists(p) else b'(no log)'
+          content=base64.b64encode(data).decode()
+          try:
+              req=urllib.request.Request(f"https://api.github.com/repos/{REPO}/git/refs",data=json.dumps({"ref":"refs/heads/diag-logs","sha":os.popen('git rev-parse HEAD').read().strip()}).encode(),headers=H,method='POST')
+              urllib.request.urlopen(req,timeout=30).read()
+          except Exception as e:
+              pass
+          sha=''
+          try:
+              req=urllib.request.Request(f"https://api.github.com/repos/{REPO}/contents/ci-logs/build_mac.log?ref=diag-logs",headers=H)
+              sha=json.loads(urllib.request.urlopen(req,timeout=30).read()).get('sha','')
+          except Exception:
+              pass
+          body={"message":"diag macos","content":content,"branch":"diag-logs"}
+          if sha: body["sha"]=sha
+          req=urllib.request.Request(f"https://api.github.com/repos/{REPO}/contents/ci-logs/build_mac.log",data=json.dumps(body).encode(),headers=H,method='PUT')
+          print(urllib.request.urlopen(req,timeout=30).read().decode()[:200])
+          PY
