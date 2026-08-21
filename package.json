@@ -5,11 +5,11 @@
   "main": "main.js",
   "author": "wangx (wangxiao@hrbu.edu.cn)",
   "private": true,
-  "scripts": {
-    "start": "electron .",
-    "dist:win": "electron-builder --win --x64",
-    "dist:mac": "electron-builder --mac --x64 --arm64"
-  },
+    "scripts": {
+      "start": "electron .",
+      "dist:win": "electron-builder --win --x64 --publish=never",
+      "dist:mac": "electron-builder --mac --x64 --arm64 --publish=never"
+    },
   "build": {
     "appId": "com.hrbu.gradeanalyzer",
     "productName": "哈尔滨学院成绩分析工作平台 v2.01",
